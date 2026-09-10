@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>שירון: אקורדים מעל מילים בעברית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Heebo:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFAF7;
+    --panel:#F1EEE6;
+    --ink:#1C2230;
+    --muted:#6B6A63;
+    --rule:#DAD6CB;
+    --pen:#2A4B8D;
+    --pen-soft:#E7ECF7;
+    --lyric-size:19px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Heebo",system-ui,"Segoe UI",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1400px;margin:0 auto;padding:22px 20px 60px}
+
+  header.top{
+    display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 22px;
+    padding-bottom:16px;border-bottom:2px solid var(--ink);
+  }
+  .brand{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:27px;font-weight:700;letter-spacing:-.01em}
+  .brand small{display:block;font-family:"Heebo",sans-serif;font-size:13px;font-weight:400;color:var(--muted);margin-top:3px}
+  .song-fields{display:flex;gap:10px;flex:1;min-width:260px}
+  .song-fields input{
+    flex:1;min-width:0;background:transparent;border:0;border-bottom:1px solid var(--rule);
+    font-family:"Frank Ruhl Libre",serif;font-size:17px;color:var(--ink);padding:6px 2px;
+  }
+  .song-fields input::placeholder{color:#A9A69C;font-family:"Heebo",sans-serif;font-size:14px}
+  .song-fields input:focus{outline:none;border-bottom-color:var(--pen)}
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 18px}
+  .group{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--rule);border-radius:7px;padding:5px 9px}
+  .group span.lbl{font-size:13px;color:var(--muted)}
+  button{
+    font-family:inherit;font-size:14px;color:var(--ink);background:#fff;
+    border:1px solid var(--rule);border-radius:6px;padding:6px 11px;cursor:pointer;
+  }
+  button:hover{border-color:var(--pen);color:var(--pen)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button:disabled:hover{border-color:var(--rule);color:var(--ink)}
+  button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--pen);outline-offset:2px}
+  button.primary{background:var(--pen);border-color:var(--pen);color:#fff}
+  button.primary:hover{background:#22407a;color:#fff}
+  button.primary:disabled:hover{background:var(--pen);color:#fff}
+  .key{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;color:var(--pen);min-width:34px;text-align:center}
+  input[type=range]{width:110px;accent-color:var(--pen)}
+  label.check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer}
+
+  .panes{display:grid;grid-template-columns:250px minmax(0,1fr) minmax(0,1.15fr);gap:22px;align-items:start}
+  .panes.lib-off{grid-template-columns:min-content minmax(0,1fr) minmax(0,1.15fr)}
+  @media(max-width:1080px){
+    .panes,.panes.lib-off{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
+    .library{grid-column:1 / -1}
+  }
+  @media(max-width:860px){.panes,.panes.lib-off{grid-template-columns:1fr}}
+
+  .pane-title{font-size:12.5px;color:var(--muted);margin:0 0 7px 2px}
+  textarea{
+    width:100%;height:60vh;min-height:340px;resize:vertical;
+    background:var(--panel);border:1px solid var(--rule);border-radius:9px;padding:14px 15px;
+    font-family:"IBM Plex Mono","Courier New",monospace;font-size:14.5px;line-height:2;
+    color:var(--ink);direction:rtl;
+  }
+  .hint{font-size:12.5px;color:var(--muted);line-height:1.75;margin-top:9px}
+  .hint code{font-family:"IBM Plex Mono",monospace;background:var(--pen-soft);color:var(--pen);padding:1px 5px;border-radius:4px;direction:ltr;display:inline-block}
+
+  .sheet{
+    background:#fff;border:1px solid var(--rule);border-radius:9px;padding:26px 28px 34px;
+    min-height:340px;box-shadow:0 1px 0 rgba(28,34,48,.04);
+  }
+  .sheet h1{font-family:"Frank Ruhl Libre",serif;font-size:26px;margin:0 0 2px}
+  .sheet h1:empty{display:none}
+  .sheet .by{font-size:14px;color:var(--muted);margin:0 0 20px}
+  .sheet .by:empty{display:none}
+
+  .line{margin:0 0 2px;line-height:1.35;display:flex;flex-wrap:wrap;align-items:flex-end}
+  .chunk{display:block}
+  .ch{
+    display:block;text-align:right;
+    font-family:"IBM Plex Mono","Courier New",monospace;
+    font-size:calc(var(--lyric-size) * .74);font-weight:600;color:var(--pen);
+    line-height:1.5;padding-inline-end:.85em;white-space:pre;min-height:1.5em;
+  }
+  .tx{
+    display:block;font-family:"Heebo",system-ui,"Segoe UI",Arial,sans-serif;
+    font-size:var(--lyric-size);line-height:1.5;white-space:pre-wrap;
+  }
+  .chunk .tx{min-height:1.5em}
+  .instr{
+    direction:ltr;unicode-bidi:isolate;text-align:right;white-space:pre-wrap;
+    font-family:"IBM Plex Mono","Courier New",monospace;
+    font-size:calc(var(--lyric-size) * .78);font-weight:600;color:var(--pen);
+    line-height:1.9;margin:0 0 2px;
+  }
+  .blank{height:calc(var(--lyric-size) * .5)}
+  .section{
+    font-size:calc(var(--lyric-size) * .8);font-weight:700;color:var(--muted);
+    margin:18px 0 6px;padding-bottom:3px;border-bottom:1px solid var(--rule);
+  }
+  .empty-state{color:var(--muted);font-size:14px;line-height:1.8}
+
+  /* ---- ספריית השירים ---- */
+  .library{
+    background:var(--panel);border:1px solid var(--rule);border-radius:9px;
+    padding:12px 13px 14px;display:flex;flex-direction:column;gap:10px;
+  }
+  .lib-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .lib-head .pane-title{margin:0}
+  .lib-toggle{padding:2px 8px;font-size:13px;line-height:1.5}
+  .panes.lib-off .library{padding:10px 7px}
+  .panes.lib-off .lib-body{display:none}
+  .panes.lib-off .lib-head{flex-direction:column;gap:8px}
+  .panes.lib-off .lib-head .pane-title{writing-mode:vertical-rl}
+  @media(max-width:1080px){
+    .panes.lib-off .lib-head{flex-direction:row}
+    .panes.lib-off .lib-head .pane-title{writing-mode:horizontal-tb}
+  }
+  .lib-search{
+    width:100%;background:#fff;border:1px solid var(--rule);border-radius:6px;
+    padding:6px 9px;font-family:inherit;font-size:13.5px;color:var(--ink);
+  }
+  .lib-search::placeholder{color:#A9A69C}
+  .lib-search:focus{outline:none;border-color:var(--pen)}
+  .lib-list{display:flex;flex-direction:column;gap:1px;max-height:44vh;overflow:auto}
+  .lib-item{
+    display:block;width:100%;text-align:start;background:transparent;border:1px solid transparent;
+    border-radius:6px;padding:7px 8px;cursor:pointer;line-height:1.35;
+  }
+  .lib-item:hover{background:#fff;border-color:var(--rule);color:var(--ink)}
+  .lib-item.on{background:var(--pen-soft);border-color:#C9D5EE;color:var(--pen)}
+  .lib-item b{display:block;font-family:"Frank Ruhl Libre",serif;font-weight:500;font-size:15.5px}
+  .lib-item i{display:block;font-style:normal;font-size:11.5px;color:var(--muted);margin-top:2px}
+  .lib-item .tag{
+    font-family:"Heebo",sans-serif;font-size:10.5px;color:var(--pen);
+    border:1px solid #C9D5EE;border-radius:4px;padding:0 4px;margin-inline-start:5px;vertical-align:1px;
+  }
+  .lib-msg{font-size:12px;color:var(--muted);line-height:1.6;margin:0}
+  .lib-msg:empty{display:none}
+  .lib-actions{display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--rule);padding-top:10px}
+  .lib-actions button{font-size:13px;padding:5px 9px}
+
+  .ed-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+  .autosave{font-size:12px;color:var(--muted);opacity:0;transition:opacity .2s}
+  .autosave.on{opacity:1}
+  @media(prefers-reduced-motion:reduce){.autosave{transition:none}}
+  .draft-bar{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 8px;
+    background:var(--pen-soft);border:1px solid #C9D5EE;border-radius:7px;
+    padding:6px 10px;font-size:12.5px;color:var(--pen);
+  }
+  .draft-bar[hidden]{display:none}
+  .draft-bar button{font-size:12.5px;padding:3px 8px;background:#fff}
+  .draft-bar button[hidden]{display:none}
+
+  dialog{border:1px solid var(--rule);border-radius:10px;padding:0;max-width:560px;width:92%;color:var(--ink)}
+  dialog::backdrop{background:rgba(28,34,48,.35)}
+  .dlg{padding:20px 22px}
+  .dlg h2{font-family:"Frank Ruhl Libre",serif;font-size:20px;margin:0 0 6px}
+  .dlg p{font-size:13.5px;color:var(--muted);line-height:1.7;margin:0 0 12px}
+  .dlg textarea{height:190px;min-height:120px;background:#fff}
+  .dlg .row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap}
+  .dlg input[type=password],.dlg input[type=text]{
+    width:100%;background:#fff;border:1px solid var(--rule);border-radius:6px;padding:7px 9px;
+    font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--ink);direction:ltr;
+  }
+  .dlg input[type=password]:focus,.dlg input[type=text]:focus{outline:none;border-color:var(--pen)}
+  .step{border:1px solid var(--rule);border-radius:8px;background:var(--panel);padding:11px 12px;margin:0 0 10px}
+  .step h3{font-family:"Frank Ruhl Libre",serif;font-size:16px;font-weight:500;margin:0 0 4px}
+  .step p{margin:0 0 9px;font-size:12.5px}
+  .step .row{margin-top:0;justify-content:flex-start}
+  .warn{color:#8A3B2E;font-size:12.5px;line-height:1.6;margin:0 0 9px}
+  .warn:empty{display:none}
+  .tok-state{font-size:13px;color:var(--muted);margin:0 0 12px}
+  .tok-state.on{color:var(--pen);font-weight:500}
+
+  .toast{
+    position:fixed;inset-block-end:22px;inset-inline-start:22px;background:var(--ink);color:#fff;
+    font-size:14px;padding:10px 15px;border-radius:7px;opacity:0;transform:translateY(8px);
+    transition:opacity .18s,transform .18s;pointer-events:none;
+  }
+  .toast.on{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.toast{transition:none}}
+
+  @media print{
+    @page{margin:16mm}
+    body{background:#fff}
+    .wrap{max-width:none;padding:0}
+    header.top,.toolbar,.editor-pane,.hint,dialog,.toast,
+    .library,.lib-head,.lib-body,.lib-search,.lib-list,.lib-actions,.lib-msg,
+    .lib-toggle,.draft-bar,.autosave,.ed-head{display:none !important}
+    .panes,.panes.lib-off{display:block}
+    .pane-title{display:none}
+    .sheet{border:0;border-radius:0;padding:0;box-shadow:none}
+    .ch,.instr{color:#000}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">שירון<small>אקורדים באנגלית מעל מילים בעברית, בלי שהשורה מתהפכת</small></div>
+    <div class="song-fields">
+      <input id="title" placeholder="שם השיר">
+      <input id="artist" placeholder="מילים ולחן">
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="group">
+      <span class="lbl">טרנספוזיציה</span>
+      <button id="down" aria-label="הורד חצי טון">−</button>
+      <span class="key" id="steps">0</span>
+      <button id="up" aria-label="העלה חצי טון">+</button>
+      <label class="check"><input type="checkbox" id="flats"> במולים</label>
+    </div>
+    <div class="group">
+      <span class="lbl">גודל</span>
+      <input type="range" id="size" min="15" max="30" value="19" aria-label="גודל טקסט">
+    </div>
+    <button id="convert">המרה משורות אקורדים</button>
+    <button id="copy">העתקה לוורד</button>
+    <button class="primary" id="print">הדפסה או PDF</button>
+  </div>
+
+  <div class="panes" id="panes">
+
+    <aside class="library" id="library">
+      <div class="lib-head">
+        <p class="pane-title">ספריית השירים</p>
+        <button class="lib-toggle" id="libToggle" aria-expanded="true" aria-controls="libBody" title="הסתרת הספרייה">הסתרה</button>
+      </div>
+      <div class="lib-body" id="libBody">
+        <input class="lib-search" id="libSearch" type="search" placeholder="חיפוש לפי שם או יוצר" aria-label="חיפוש בספרייה">
+        <div class="lib-list" id="libList" role="list"></div>
+        <p class="lib-msg" id="libMsg"></p>
+        <div class="lib-actions">
+          <button class="primary" id="save">שמירה</button>
+          <button id="newSong">שיר חדש</button>
+          <button id="exportLib">ייצוא ספרייה</button>
+          <button id="importLib">ייבוא ספרייה</button>
+          <button id="settingsBtn">הגדרות</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="editor-pane">
+      <div class="ed-head">
+        <p class="pane-title">כתיבה</p>
+        <span class="autosave" id="autosave" role="status" aria-live="polite"></span>
+      </div>
+      <div class="draft-bar" id="draftBar" hidden>
+        <span>יש שינויים שלא נשמרו</span>
+        <button id="draftRestore">שחזור השינויים</button>
+        <button id="draftDiscard">מחיקת השינויים</button>
+      </div>
+      <textarea id="src" spellcheck="false"></textarea>
+      <p class="hint">
+        אקורד נכתב בתוך סוגריים מרובעים ממש לפני ההברה שבה הוא מתחלף: <code>[Am]שלום [F]עולם</code>.<br>
+        שורה שמתחילה ב־<code>#</code> הופכת לכותרת מקטע, ושורה ריקה מייצרת רווח.<br>
+        שורה שיש בה רק אקורדים, למשל <code>E, C, F#, A x4</code>, נכתבת כשורה אינסטרומנטלית אחת בלי סוגריים.
+      </p>
+    </div>
+
+    <div>
+      <p class="pane-title">תצוגה</p>
+      <div class="sheet" id="sheet"></div>
+    </div>
+  </div>
+</div>
+
+<dialog id="conv">
+  <div class="dlg">
+    <h2>המרה משורות אקורדים</h2>
+    <p>הדביקו שיר בפורמט הישן: שורת אקורדים ומתחתיה שורת מילים. ההמרה מנחשת לאיזו מילה שייך כל אקורד לפי מיקומה בשורה, ואפשר לתקן אחריה ביד.</p>
+    <textarea id="convIn" spellcheck="false" placeholder="Am        F&#10;שלום עולם"></textarea>
+    <div class="row">
+      <label class="check"><input type="checkbox" id="mirror" checked> המילים בעברית, הפוך את סדר העמודות</label>
+      <span>
+        <button id="convCancel">ביטול</button>
+        <button class="primary" id="convOk">המרה</button>
+      </span>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="saveDlg">
+  <div class="dlg">
+    <h2>שמירה למאגר</h2>
+    <p id="saveIntro">השמירה נעשית בשני שלבים דרך עורך הקבצים של גיטהאב. בכל שלב נפתחת לשונית חדשה עם התוכן מוכן, ונשאר רק ללחוץ על Commit changes.</p>
+    <p class="warn" id="saveWarn"></p>
+
+    <div class="step">
+      <h3>שלב 1: קובץ השיר</h3>
+      <p id="savePath1"></p>
+      <div class="row">
+        <button class="primary" id="openSong">פתיחת העורך בגיטהאב</button>
+        <button id="copySong">העתקת תוכן הקובץ</button>
+        <button id="dlSong">הורדה כקובץ txt</button>
+      </div>
+    </div>
+
+    <div class="step">
+      <h3>שלב 2: קובץ הרשימה</h3>
+      <p>songs/manifest.json, עם הרשומה המעודכנת כבר בפנים.</p>
+      <div class="row">
+        <button class="primary" id="openMan">פתיחת העורך בגיטהאב</button>
+        <button id="copyMan">העתקת תוכן הקובץ</button>
+        <button id="dlMan">הורדה כקובץ json</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <button id="directSave" hidden class="primary">שמירה ישירה עם הטוקן</button>
+      <button id="saveClose">סגירה</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="setDlg">
+  <div class="dlg">
+    <h2>הגדרות</h2>
+    <p>אפשר להדביק כאן טוקן אישי של גיטהאב מסוג fine-grained, מוגבל למאגר הזה בלבד ועם הרשאת contents:write. כשיש טוקן, כפתור השמירה כותב ישירות למאגר בלי לפתוח לשוניות. הטוקן נשמר רק בדפדפן הזה, לא נכתב לשום קובץ ולא נשלח לשום מקום מלבד גיטהאב.</p>
+    <p class="tok-state" id="tokState"></p>
+    <input id="tokInput" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_...">
+    <div class="row">
+      <span>
+        <button class="primary" id="tokSave">שמירת הטוקן</button>
+        <button id="tokRemove">הסרת הטוקן</button>
+      </span>
+      <button id="setClose">סגירה</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="textDlg">
+  <div class="dlg">
+    <h2 id="textTitle">תוכן הקובץ</h2>
+    <p>העתקה אוטומטית לא הסתדרה. סמנו את התוכן והעתיקו ידנית.</p>
+    <textarea id="textOut" spellcheck="false"></textarea>
+    <div class="row">
+      <span></span>
+      <button class="primary" id="textClose">סגירה</button>
+    </div>
+  </div>
+</dialog>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const SHARP=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FLAT =['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+const PC={'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'Fb':4,'E#':5,'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11,'Cb':11,'B#':0};
+const CHORD_RE=/^([A-G][#b]?)(.*)$/;
+const TOKEN_RE=/^[A-G][#b]?[A-Za-z0-9#b°ø+()\-]*(\/[A-G][#b]?)?$/;
+
+const $=id=>document.getElementById(id);
+const src=$('src'), sheet=$('sheet');
+let steps=0;
+
+const DEMO=`# פזמון
+[Am]עוד יבוא שלום [F]עלינו
+[C]ועל [G]כולם
+[Am]סלאם [F]עלינו [C]ועל כל הע[G]ולם`;
+
+function transposeOne(tok,n,flats){
+  if(!n) return tok;
+  return tok.split('/').map(part=>{
+    const m=part.match(CHORD_RE);
+    if(!m) return part;
+    let acc=m[1].slice(1), rest=m[2];
+    if(!acc&&/^[A-Za-z]+[#b]$/.test(rest)){acc=rest.slice(-1);rest=rest.slice(0,-1);}
+    const root=m[1][0]+acc;
+    if(!(root in PC)) return part;
+    const idx=(PC[root]+n%12+12)%12;
+    return (flats?FLAT:SHARP)[idx]+rest;
+  }).join('/');
+}
+
+function isChordToken(t){
+  const c=t.replace(/[,|.\-–]+$/,'');
+  return TOKEN_RE.test(c)||/^[x×]\s*\d+$/i.test(c)||/^[x×]$/i.test(c)||/^\d+$/.test(c)||/^[|,\-–:()]+$/.test(c);
+}
+/* שורה אינסטרומנטלית: רק אקורדים, בלי מילים */
+function instrLine(line){
+  const bare=line.replace(/[\[\]]/g,' ').replace(/\s+/g,' ').replace(/\s+([,|])/g,'$1').replace(/([,|])(?=\S)/g,'$1 ').replace(/[\s,|]+$/,'').trim();
+  if(!bare) return null;
+  if(/[\u0590-\u05FF]/.test(bare)) return null;
+  if(!/[A-G]/.test(bare)) return null;
+  return bare.split(' ').every(isChordToken)?bare:null;
+}
+function transposeText(s,n,flats){
+  return s.replace(/[A-G][#b]?[^\s,|]*/g,t=>TOKEN_RE.test(t)?transposeOne(t,n,flats):t);
+}
+
+function parseLine(line){
+  const re=/\[([^\]]*)\]/g;
+  const chunks=[]; let last=0,m;
+  let cur={chord:'',text:''};
+  while((m=re.exec(line))!==null){
+    cur.text+=line.slice(last,m.index);
+    if(cur.chord||cur.text) chunks.push(cur);
+    cur={chord:m[1].trim(),text:''};
+    last=re.lastIndex;
+  }
+  cur.text+=line.slice(last);
+  if(cur.chord||cur.text) chunks.push(cur);
+  return chunks.length?chunks:[{chord:'',text:line}];
+}
+
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+function render(){
+  const flats=$('flats').checked;
+  const t=$('title').value.trim(), a=$('artist').value.trim();
+  let html='';
+  if(t) html+=`<h1>${esc(t)}</h1>`;
+  if(a) html+=`<p class="by">${esc(a)}</p>`;
+
+  const lines=src.value.split('\n');
+  if(!src.value.trim()){
+    sheet.innerHTML=html+`<p class="empty-state">התחילו לכתוב בצד ימין, והשיר ייבנה כאן.</p>`;
+    return;
+  }
+  for(const raw of lines){
+    const line=raw.replace(/\s+$/,'');
+    if(!line.trim()){html+='<div class="blank"></div>';continue;}
+    if(line.trimStart().startsWith('#')){
+      html+=`<div class="section">${esc(line.replace(/^\s*#\s?/,''))}</div>`;continue;
+    }
+    const inst=instrLine(line);
+    if(inst){
+      html+=`<div class="instr">${esc(transposeText(inst,steps,flats))}</div>`;continue;
+    }
+    const chunks=parseLine(line);
+    if(!chunks.some(c=>c.chord)){
+      html+=`<div class="line"><span class="tx">${esc(line)}</span></div>`;continue;
+    }
+    html+='<div class="line">';
+    for(const c of chunks){
+      const ch=c.chord?transposeOne(c.chord,steps,flats):'';
+      html+=`<span class="chunk"><span class="ch" dir="ltr" style="unicode-bidi:isolate">${esc(ch)}</span><span class="tx">${esc(c.text)}</span></span>`;
+    }
+    html+='</div>';
+  }
+  sheet.innerHTML=html;
+}
+
+/* ---- הדבקה דו-שורתית ---- */
+function isChordLine(l){
+  if(!l.trim()) return false;
+  if(/[\u0590-\u05FF]/.test(l)) return false;
+  return l.trim().split(/\s+/).every(t=>TOKEN_RE.test(t));
+}
+function snap(text,pos){
+  pos=Math.max(0,Math.min(text.length,pos));
+  if(pos===0||pos===text.length) return pos;
+  let i=pos;
+  while(i>0&&!/\s/.test(text[i-1])) i--;
+  let j=pos;
+  while(j<text.length&&!/\s/.test(text[j])) j++;
+  const startRight=(j<text.length)?j+1:text.length;
+  return (pos-i)<=(startRight-pos)?i:startRight;
+}
+function convert(input,mirror){
+  const lines=input.split('\n'); const out=[];
+  for(let i=0;i<lines.length;i++){
+    if(isChordLine(lines[i])&&lines[i+1]!==undefined&&lines[i+1].trim()&&!isChordLine(lines[i+1])){
+      const lyric=lines[i+1].trim();
+      const marks=[];
+      const re=/\S+/g; let m;
+      while((m=re.exec(lines[i]))!==null){
+        const col=mirror?lyric.length-m.index:m.index;
+        marks.push({pos:snap(lyric,col),chord:m[0]});
+      }
+      marks.sort((a,b)=>b.pos-a.pos);
+      let s=lyric;
+      for(const k of marks) s=s.slice(0,k.pos)+'['+k.chord+']'+s.slice(k.pos);
+      out.push(s); i++;
+    } else out.push(lines[i]);
+  }
+  return out.join('\n');
+}
+
+/* ---- העתקה לוורד: טבלאות, כי זה מה שוורד מיישר נכון ---- */
+function wordHtml(){
+  const flats=$('flats').checked;
+  const t=$('title').value.trim(), a=$('artist').value.trim();
+  let h='<div dir="rtl" style="font-family:David,Arial,sans-serif">';
+  if(t) h+=`<p style="font-size:18pt;font-weight:bold;margin:0">${esc(t)}</p>`;
+  if(a) h+=`<p style="font-size:10pt;color:#666;margin:0 0 12pt">${esc(a)}</p>`;
+  for(const raw of src.value.split('\n')){
+    const line=raw.replace(/\s+$/,'');
+    if(!line.trim()){h+='<p style="margin:0;font-size:8pt">&nbsp;</p>';continue;}
+    if(line.trimStart().startsWith('#')){
+      h+=`<p style="margin:10pt 0 2pt;font-weight:bold;font-size:11pt;color:#555">${esc(line.replace(/^\s*#\s?/,''))}</p>`;continue;
+    }
+    const inst=instrLine(line);
+    if(inst){
+      h+=`<p dir="ltr" style="direction:ltr;text-align:right;margin:0 0 3pt;font-family:Consolas,monospace;font-size:10.5pt;font-weight:bold;color:#2A4B8D">${esc(transposeText(inst,steps,flats))}</p>`;continue;
+    }
+    const chunks=parseLine(line);
+    if(!chunks.some(c=>c.chord)){
+      h+=`<p style="margin:0 0 2pt;font-size:12pt">${esc(line)}</p>`;continue;
+    }
+    let r1='',r2='';
+    for(const c of chunks){
+      const ch=c.chord?transposeOne(c.chord,steps,flats):'';
+      r1+=`<td style="padding:0 0 0 8pt;white-space:nowrap"><span dir="ltr" style="font-family:Consolas,monospace;font-size:10pt;font-weight:bold;color:#2A4B8D">${esc(ch)}</span></td>`;
+      r2+=`<td style="padding:0 0 0 8pt;white-space:pre;font-size:12pt">${esc(c.text)}</td>`;
+    }
+    h+=`<table dir="rtl" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 4pt"><tr>${r1}</tr><tr>${r2}</tr></table>`;
+  }
+  return h+'</div>';
+}
+async function copyToWord(){
+  const html=wordHtml();
+  try{
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html':new Blob([html],{type:'text/html'}),
+      'text/plain':new Blob([src.value],{type:'text/plain'})
+    })]);
+    toast('הועתק. הדביקו בוורד או בגוגל דוקס');
+  }catch(e){
+    const d=document.createElement('div');
+    d.contentEditable='true'; d.innerHTML=html;
+    d.style.cssText='position:fixed;inset-inline-start:-9999px;top:0';
+    document.body.appendChild(d);
+    const r=document.createRange(); r.selectNodeContents(d);
+    const s=getSelection(); s.removeAllRanges(); s.addRange(r);
+    const ok=document.execCommand('copy');
+    s.removeAllRanges(); d.remove();
+    toast(ok?'הועתק. הדביקו בוורד או בגוגל דוקס':'ההעתקה נחסמה בדפדפן. נסו הדפסה ל־PDF');
+  }
+}
+
+let tId;
+function toast(msg){
+  const el=$('toast'); el.textContent=msg; el.classList.add('on');
+  clearTimeout(tId); tId=setTimeout(()=>el.classList.remove('on'),2400);
+}
+function setSteps(n){ steps=n; $('steps').textContent=(n>0?'+':'')+n; render(); }
+
+src.addEventListener('input',render);
+$('title').addEventListener('input',render);
+$('artist').addEventListener('input',render);
+$('flats').addEventListener('change',render);
+$('up').addEventListener('click',()=>setSteps(steps+1));
+$('down').addEventListener('click',()=>setSteps(steps-1));
+$('steps').addEventListener('click',()=>setSteps(0));
+$('size').addEventListener('input',e=>document.documentElement.style.setProperty('--lyric-size',e.target.value+'px'));
+$('print').addEventListener('click',()=>window.print());
+$('copy').addEventListener('click',copyToWord);
+$('convert').addEventListener('click',()=>{$('convIn').value='';$('conv').showModal();});
+$('convCancel').addEventListener('click',()=>$('conv').close());
+$('convOk').addEventListener('click',()=>{
+  const res=convert($('convIn').value,$('mirror').checked);
+  if(res.trim()) src.value=(src.value.trim()?src.value.replace(/\s*$/,'\n\n'):'')+res;
+  $('conv').close(); render(); markDirty();
+});
+
+/* ================== ספריית שירים ================== */
+const OWNER='liav-chanoch', REPO_NAME='chord-sheet', BRANCH='main';
+const REPO='https://github.com/'+OWNER+'/'+REPO_NAME;
+const API='https://api.github.com/repos/'+OWNER+'/'+REPO_NAME+'/contents/';
+const MANIFEST_PATH='songs/manifest.json';
+const DRAFT='chordsheet:draft:';
+const LOCAL='chordsheet:local:';
+const LOCAL_INDEX='chordsheet:local-index';
+const LIB_PREF='chordsheet:lib';
+const TOKEN_KEY='chordsheet:token';
+const MAX_URL=7800;
+
+const ls={
+  get(k){try{return localStorage.getItem(k);}catch(e){return null;}},
+  set(k,v){try{localStorage.setItem(k,v);}catch(e){}},
+  del(k){try{localStorage.removeItem(k);}catch(e){}}
+};
+
+let manifest=[];
+let current={id:'scratch',slug:'',title:'',artist:'',inRepo:false};
+let baseContent='';
+
+function uid(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function bust(u){return u+(u.includes('?')?'&':'?')+'v='+Date.now();}
+function libMsg(m){$('libMsg').textContent=m||'';}
+
+/* ---- slug ---- */
+const HEB={'א':'a','ב':'b','ג':'g','ד':'d','ה':'h','ו':'v','ז':'z','ח':'ch','ט':'t','י':'y','כ':'k','ך':'k','ל':'l','מ':'m','ם':'m','נ':'n','ן':'n','ס':'s','ע':'a','פ':'p','ף':'f','צ':'ts','ץ':'ts','ק':'k','ר':'r','ש':'sh','ת':'t'};
+function slugify(s){
+  let out='';
+  for(const ch of String(s||'').normalize('NFKD')){
+    if(HEB[ch]) out+=HEB[ch];
+    else if(/[A-Za-z0-9]/.test(ch)) out+=ch.toLowerCase();
+    else if(/[\s_\-.,'"()\[\]]/.test(ch)) out+='-';
+  }
+  out=out.replace(/-+/g,'-').replace(/^-+|-+$/g,'').slice(0,60).replace(/-+$/,'');
+  return out||'song';
+}
+function uniqueSlug(base,id){
+  const taken=new Set(manifest.filter(e=>e.id!==id).map(e=>e.slug));
+  let s=base,n=1;
+  while(taken.has(s)){n++;s=base+'-'+n;}
+  return s;
+}
+
+/* ---- אחסון מקומי של שירים שעדיין לא במאגר ---- */
+function localIndex(){
+  try{const a=JSON.parse(ls.get(LOCAL_INDEX)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}
+}
+function saveLocalIndex(a){ls.set(LOCAL_INDEX,JSON.stringify(a));}
+function forgetLocal(id){
+  saveLocalIndex(localIndex().filter(e=>e.id!==id));
+  ls.del(LOCAL+id);
+}
+
+/* ---- טעינת הרשימה ---- */
+async function loadManifest(){
+  let ok=false, repo=[];
+  try{
+    const r=await fetch(bust(MANIFEST_PATH),{cache:'no-store'});
+    if(r.ok){
+      const data=JSON.parse(await r.text());
+      if(Array.isArray(data)){
+        repo=data.filter(e=>e&&typeof e==='object'&&e.id&&e.slug);
+        ok=true;
+      }
+    }
+  }catch(e){}
+  const repoIds=new Set(repo.map(e=>e.id));
+  const locals=localIndex().filter(e=>!repoIds.has(e.id));
+  saveLocalIndex(locals);
+  manifest=repo.concat(locals.map(e=>Object.assign({},e,{local:true})));
+  if(!ok) libMsg('רשימת השירים לא נטענה. אפשר להמשיך לכתוב, ולשמור בהמשך.');
+  else if(!manifest.length) libMsg('הספרייה ריקה. שמרו שיר ראשון והוא יופיע כאן.');
+  else libMsg('');
+  renderLib();
+}
+
+function sortedEntries(){
+  const q=$('libSearch').value.trim().toLowerCase();
+  return manifest
+    .filter(e=>!q||((e.title||'')+' '+(e.artist||'')).toLowerCase().includes(q))
+    .slice()
+    .sort((a,b)=>String(b.updated||'').localeCompare(String(a.updated||''))||String(a.title||'').localeCompare(String(b.title||''),'he'));
+}
+function niceDate(u){
+  if(!u) return '';
+  const d=new Date(u);
+  return isNaN(d)?String(u):d.toLocaleDateString('he-IL');
+}
+function renderLib(){
+  const list=$('libList'), items=sortedEntries();
+  if(!items.length){list.innerHTML='';return;}
+  list.innerHTML=items.map(e=>{
+    const meta=[e.artist,niceDate(e.updated)].filter(Boolean).join(' · ');
+    return '<button class="lib-item'+(current&&e.id===current.id?' on':'')+'" role="listitem" data-id="'+esc(e.id)+'">'
+      +'<b>'+esc(e.title||e.slug)+(e.local?'<span class="tag">מקומי</span>':'')+'</b>'
+      +(meta?'<i>'+esc(meta)+'</i>':'')+'</button>';
+  }).join('');
+}
+
+/* ---- פתיחת שיר ---- */
+async function openSong(id){
+  const e=manifest.find(x=>x.id===id);
+  if(!e) return;
+  let content=null;
+  if(!e.local){
+    try{
+      const r=await fetch(bust('songs/'+e.slug+'.txt'),{cache:'no-store'});
+      if(r.ok) content=await r.text();
+    }catch(err){}
+  }
+  const stored=ls.get(LOCAL+id);
+  if(content===null&&stored!==null) content=stored;
+  if(content===null){
+    content='';
+    libMsg('קובץ השיר לא נטען. ייתכן שהוא עדיין לא נשמר במאגר.');
+  }else libMsg('');
+  current={id:e.id,slug:e.slug,title:e.title||'',artist:e.artist||'',inRepo:!e.local};
+  baseContent=content;
+  $('title').value=current.title;
+  $('artist').value=current.artist;
+  src.value=content;
+  render(); renderLib(); updateDraftBar();
+}
+
+function newSong(){
+  current={id:uid(),slug:'',title:'',artist:'',inRepo:false};
+  baseContent='';
+  $('title').value=''; $('artist').value=''; src.value='';
+  render(); renderLib(); updateDraftBar();
+  $('title').focus();
+}
+
+/* ---- טיוטות מקומיות ---- */
+let draftTimer, flashTimer;
+function updateDraftBar(){
+  const d=ls.get(DRAFT+current.id);
+  const differs=(d!==null&&d!==baseContent)||src.value!==baseContent;
+  $('draftBar').hidden=!differs;
+  $('draftRestore').hidden=!(d!==null&&d!==src.value);
+}
+function flashSaved(){
+  const el=$('autosave');
+  el.textContent='נשמר מקומית'; el.classList.add('on');
+  clearTimeout(flashTimer);
+  flashTimer=setTimeout(()=>{el.classList.remove('on');},1600);
+}
+function persistDraft(){
+  if(src.value===baseContent){
+    ls.del(DRAFT+current.id);
+  }else{
+    ls.set(DRAFT+current.id,src.value);
+    if(!current.inRepo) ls.set(LOCAL+current.id,src.value);
+    flashSaved();
+  }
+  updateDraftBar();
+}
+function markDirty(){
+  clearTimeout(draftTimer);
+  draftTimer=setTimeout(persistDraft,800);
+  updateDraftBar();
+}
+src.addEventListener('input',markDirty);
+$('draftRestore').addEventListener('click',()=>{
+  const d=ls.get(DRAFT+current.id);
+  if(d!==null){src.value=d;render();}
+  updateDraftBar();
+});
+$('draftDiscard').addEventListener('click',()=>{
+  ls.del(DRAFT+current.id);
+  src.value=baseContent; render(); updateDraftBar();
+  toast('השינויים המקומיים נמחקו');
+});
+
+/* ---- קיפול הפאנל ---- */
+const mqNarrow=window.matchMedia('(max-width:1080px)');
+function libPref(){const v=ls.get(LIB_PREF);return v===null?true:v==='1';}
+function setLib(open,remember){
+  $('panes').classList.toggle('lib-off',!open);
+  const b=$('libToggle');
+  b.textContent=open?'הסתרה':'הצגה';
+  b.title=open?'הסתרת הספרייה':'הצגת הספרייה';
+  b.setAttribute('aria-expanded',String(open));
+  if(remember) ls.set(LIB_PREF,open?'1':'0');
+}
+$('libToggle').addEventListener('click',()=>{
+  setLib($('panes').classList.contains('lib-off'),true);
+});
+mqNarrow.addEventListener('change',ev=>setLib(ev.matches?false:libPref(),false));
+$('libSearch').addEventListener('input',renderLib);
+$('libList').addEventListener('click',ev=>{
+  const b=ev.target.closest('.lib-item');
+  if(b) openSong(b.dataset.id);
+});
+$('newSong').addEventListener('click',newSong);
+
+/* ---- כלי עזר: העתקה והורדה ---- */
+async function copyText(text,label){
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('הועתק ללוח');
+  }catch(e){
+    $('textTitle').textContent=label||'תוכן הקובץ';
+    $('textOut').value=text;
+    $('textDlg').showModal();
+    $('textOut').select();
+  }
+}
+function download(name,text,type){
+  const b=new Blob([text],{type:(type||'text/plain')+';charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+$('textClose').addEventListener('click',()=>$('textDlg').close());
+
+/* ---- בניית הרשומה והקבצים ---- */
+function cleanEntry(e){
+  return {id:e.id,slug:e.slug,title:e.title||'',artist:e.artist||'',updated:e.updated||''};
+}
+function pendingEntry(){
+  if(current.id==='scratch'){
+    const nid=uid();
+    const d=ls.get(DRAFT+'scratch');
+    if(d!==null){ls.set(DRAFT+nid,d);ls.del(DRAFT+'scratch');}
+    const c=ls.get(LOCAL+'scratch');
+    if(c!==null){ls.set(LOCAL+nid,c);ls.del(LOCAL+'scratch');}
+    current.id=nid;
+  }
+  const title=$('title').value.trim();
+  const slug=current.slug||uniqueSlug(slugify(title),current.id);
+  return {id:current.id,slug:slug,title:title,artist:$('artist').value.trim(),updated:new Date().toISOString().slice(0,10)};
+}
+function manifestJson(entry){
+  const arr=manifest.filter(e=>!e.local&&e.id!==entry.id).map(cleanEntry);
+  arr.push(cleanEntry(entry));
+  arr.sort((a,b)=>String(b.updated).localeCompare(String(a.updated)));
+  return JSON.stringify(arr,null,2)+'\n';
+}
+function ghNew(path,content){
+  return REPO+'/new/'+BRANCH+'?filename='+encodeURIComponent(path).replace(/%2F/g,'/')+'&value='+encodeURIComponent(content);
+}
+function ghEdit(path,content){
+  return REPO+'/edit/'+BRANCH+'/'+path+'?value='+encodeURIComponent(content);
+}
+
+/* ---- דיאלוג השמירה ---- */
+function openSaveDialog(){
+  const entry=pendingEntry();
+  const content=src.value;
+  const path='songs/'+entry.slug+'.txt';
+  const mjson=manifestJson(entry);
+  const songUrl=current.inRepo?ghEdit(path,content):ghNew(path,content);
+  const manUrl=ghEdit(MANIFEST_PATH,mjson);
+
+  $('savePath1').textContent=path+(current.inRepo?', עדכון קובץ קיים.':', קובץ חדש.');
+  const warns=[];
+  if(!entry.title) warns.push('לא הוזן שם לשיר, ולכן שם הקובץ נגזר אוטומטית.');
+  if(songUrl.length>MAX_URL||manUrl.length>MAX_URL) warns.push('התוכן ארוך מדי לכתובת אינטרנט אחת. השתמשו בהעתקת התוכן או בהורדת הקובץ, והדביקו בעורך של גיטהאב.');
+  const pending=manifest.filter(e=>e.local&&e.id!==entry.id).length;
+  if(pending) warns.push('יש '+pending+' שירים מיובאים שעדיין לא נשמרו למאגר. הם לא נכללים בקובץ הרשימה הזה.');
+  $('saveWarn').textContent=warns.join(' ');
+
+  $('openSong').disabled=songUrl.length>MAX_URL;
+  $('openMan').disabled=manUrl.length>MAX_URL;
+  $('openSong').onclick=()=>window.open(songUrl,'_blank','noopener');
+  $('openMan').onclick=()=>window.open(manUrl,'_blank','noopener');
+  $('copySong').onclick=()=>copyText(content,'תוכן קובץ השיר');
+  $('copyMan').onclick=()=>copyText(mjson,'תוכן קובץ הרשימה');
+  $('dlSong').onclick=()=>download(entry.slug+'.txt',content,'text/plain');
+  $('dlMan').onclick=()=>download('manifest.json',mjson,'application/json');
+  $('directSave').hidden=!ls.get(TOKEN_KEY);
+
+  /* הרשומה נרשמת מקומית כדי שהשיר יופיע בספרייה כבר עכשיו,
+     ובטעינה הבאה הרשומה שבמאגר מחליפה אותה */
+  current.slug=entry.slug;
+  current.title=entry.title;
+  current.artist=entry.artist;
+  if(!current.inRepo){
+    const locals=localIndex().filter(e=>e.id!==entry.id);
+    locals.push(entry);
+    saveLocalIndex(locals);
+    ls.set(LOCAL+entry.id,content);
+    manifest=manifest.filter(e=>e.id!==entry.id).concat([Object.assign({},entry,{local:true})]);
+    renderLib();
+  }
+  $('saveDlg').showModal();
+}
+$('saveClose').addEventListener('click',()=>$('saveDlg').close());
+$('saveDlg').addEventListener('close',refreshFromRepo);
+
+/* אחרי קומיט בגיטהאב, הרשימה מתרעננת מעצמה בחזרה ללשונית */
+let lastRefresh=0;
+async function refreshFromRepo(){
+  const now=Date.now();
+  if(now-lastRefresh<8000) return;
+  lastRefresh=now;
+  await loadManifest();
+  const e=manifest.find(x=>x.id===current.id);
+  if(e&&!e.local){current.inRepo=true;current.slug=e.slug;}
+  renderLib();
+}
+window.addEventListener('focus',refreshFromRepo);
+$('directSave').addEventListener('click',()=>{$('saveDlg').close();directSave();});
+
+/* ---- שמירה ישירה דרך ה-API, רק אם הוגדר טוקן ---- */
+function b64(s){
+  const bytes=new TextEncoder().encode(s);
+  let bin='';
+  for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
+  return btoa(bin);
+}
+function ghHeaders(token){
+  return {'Accept':'application/vnd.github+json','Authorization':'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28'};
+}
+async function ghPut(token,path,content,message){
+  const head=ghHeaders(token);
+  let sha=null;
+  const g=await fetch(API+path+'?ref='+BRANCH,{headers:head,cache:'no-store'});
+  if(g.ok){ sha=(await g.json()).sha; }
+  else if(g.status===401||g.status===403) throw new Error('הטוקן נדחה על ידי גיטהאב');
+  else if(g.status!==404) throw new Error('קריאת הקובץ נכשלה, קוד '+g.status);
+  const body={message:message,content:b64(content),branch:BRANCH};
+  if(sha) body.sha=sha;
+  const r=await fetch(API+path,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},head),body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('הכתיבה נכשלה, קוד '+r.status);
+  return r.json();
+}
+async function directSave(){
+  const token=ls.get(TOKEN_KEY);
+  if(!token){openSaveDialog();return;}
+  const entry=pendingEntry(), content=src.value;
+  const btn=$('save'); btn.disabled=true;
+  try{
+    toast('שומר את השיר');
+    await ghPut(token,'songs/'+entry.slug+'.txt',content,'שיר: '+(entry.title||entry.slug));
+    manifest=manifest.filter(e=>e.id!==entry.id).concat([cleanEntry(entry)]);
+    forgetLocal(entry.id);
+    toast('מעדכן את הרשימה');
+    await ghPut(token,MANIFEST_PATH,manifestJson(entry),'רשימה: '+(entry.title||entry.slug));
+    current={id:entry.id,slug:entry.slug,title:entry.title,artist:entry.artist,inRepo:true};
+    baseContent=content;
+    ls.del(DRAFT+entry.id);
+    renderLib(); updateDraftBar();
+    toast('נשמר במאגר');
+  }catch(err){
+    toast('השמירה הישירה נכשלה. ' + (err&&err.message?err.message:'') + '. נפתחת שמירה דרך העורך');
+    openSaveDialog();
+  }finally{ btn.disabled=false; }
+}
+$('save').addEventListener('click',()=>{
+  if(ls.get(TOKEN_KEY)) directSave(); else openSaveDialog();
+});
+
+/* ---- הגדרות הטוקן ---- */
+function updateTokenState(){
+  const on=!!ls.get(TOKEN_KEY);
+  const el=$('tokState');
+  el.textContent=on?'טוקן פעיל. השמירה נכתבת ישירות למאגר.':'אין טוקן. השמירה נעשית דרך עורך הקבצים של גיטהאב.';
+  el.classList.toggle('on',on);
+  $('settingsBtn').textContent=on?'הגדרות (טוקן פעיל)':'הגדרות';
+}
+$('settingsBtn').addEventListener('click',()=>{
+  $('tokInput').value='';
+  updateTokenState();
+  $('setDlg').showModal();
+});
+$('setClose').addEventListener('click',()=>$('setDlg').close());
+$('tokSave').addEventListener('click',()=>{
+  const v=$('tokInput').value.trim();
+  if(!v){toast('לא הודבק טוקן');return;}
+  ls.set(TOKEN_KEY,v);
+  $('tokInput').value='';
+  updateTokenState();
+  toast('הטוקן נשמר בדפדפן הזה');
+});
+$('tokRemove').addEventListener('click',()=>{
+  ls.del(TOKEN_KEY);
+  $('tokInput').value='';
+  updateTokenState();
+  toast('הטוקן הוסר');
+});
+
+/* ---- ייצוא וייבוא של כל הספרייה ---- */
+async function exportLib(){
+  const songs=[];
+  for(const e of manifest){
+    let c=null;
+    if(!e.local){
+      try{const r=await fetch(bust('songs/'+e.slug+'.txt'),{cache:'no-store'});if(r.ok) c=await r.text();}catch(err){}
+    }
+    if(c===null) c=ls.get(LOCAL+e.id);
+    if(c===null&&e.id===current.id) c=src.value;
+    songs.push(Object.assign(cleanEntry(e),{content:c||''}));
+  }
+  download('chord-sheet-library.json',JSON.stringify({version:1,exported:new Date().toISOString(),songs:songs},null,2),'application/json');
+  toast('הספרייה יוצאה כקובץ');
+}
+function importPayload(data){
+  const songs=Array.isArray(data)?data:(data&&Array.isArray(data.songs)?data.songs:null);
+  if(!songs) throw new Error('bad');
+  const locals=localIndex();
+  let added=0,updated=0;
+  for(const s of songs){
+    if(!s||typeof s!=='object') continue;
+    const id=String(s.id||'').trim()||uid();
+    const title=String(s.title||'').trim();
+    const slug=String(s.slug||'').trim()||uniqueSlug(slugify(title),id);
+    const entry={id:id,slug:slug,title:title,artist:String(s.artist||'').trim(),updated:String(s.updated||'').trim()||new Date().toISOString().slice(0,10)};
+    if(typeof s.content==='string'&&s.content.length) ls.set(LOCAL+id,s.content);
+    const inRepo=manifest.some(e=>e.id===id&&!e.local);
+    if(inRepo){updated++;continue;}
+    const i=locals.findIndex(e=>e.id===id);
+    if(i>=0){locals[i]=entry;updated++;} else {locals.push(entry);added++;}
+  }
+  saveLocalIndex(locals);
+  return {added:added,updated:updated};
+}
+$('exportLib').addEventListener('click',exportLib);
+$('importLib').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async ev=>{
+  const f=ev.target.files&&ev.target.files[0];
+  ev.target.value='';
+  if(!f) return;
+  try{
+    const res=importPayload(JSON.parse(await f.text()));
+    await loadManifest();
+    toast('יובאו '+res.added+' שירים חדשים, ' + res.updated + ' עודכנו');
+  }catch(err){
+    toast('הקובץ אינו קובץ ספרייה תקין');
+  }
+});
+
+/* ---- הפעלה ---- */
+async function boot(){
+  setLib(mqNarrow.matches?false:libPref(),false);
+  updateTokenState();
+  baseContent=DEMO;
+  src.value=DEMO;
+  render();
+  updateDraftBar();
+  await loadManifest();
+}
+boot();
+</script>
+</body>
+</html>
