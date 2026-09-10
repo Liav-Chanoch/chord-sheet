@@ -185,6 +185,9 @@
   .step .row{margin-top:0;justify-content:flex-start}
   .warn{color:#8A3B2E;font-size:12.5px;line-height:1.6;margin:0 0 9px}
   .warn:empty{display:none}
+  .steps-list{margin:0 0 12px;padding-inline-start:18px;font-size:13px;color:var(--muted);line-height:1.85}
+  .steps-list b{color:var(--ink);font-weight:500}
+  .fineprint{font-size:11.5px;color:var(--muted);line-height:1.6;margin:12px 0 0}
   .tok-state{font-size:13px;color:var(--muted);margin:0 0 12px}
   .tok-state.on{color:var(--pen);font-weight:500}
 
@@ -301,8 +304,8 @@
 
 <dialog id="saveDlg">
   <div class="dlg">
-    <h2>שמירה למאגר</h2>
-    <p id="saveIntro">השמירה נעשית בשני שלבים דרך עורך הקבצים של גיטהאב. בכל שלב נפתחת לשונית חדשה עם התוכן מוכן, ונשאר רק ללחוץ על Commit changes.</p>
+    <h2>שמירה ידנית</h2>
+    <p id="saveIntro">השמירה האוטומטית לא זמינה כרגע, ולכן אפשר לשמור ידנית: העתקה או הורדה של הקובץ, או פתיחת עורך הקבצים של גיטהאב בלשונית חדשה ולחיצה על Commit changes.</p>
     <p class="warn" id="saveWarn"></p>
 
     <div class="step">
@@ -326,7 +329,7 @@
     </div>
 
     <div class="row">
-      <button id="directSave" hidden class="primary">שמירה ישירה עם הטוקן</button>
+      <button id="directSave" hidden class="primary">ניסיון שמירה אוטומטית שוב</button>
       <button id="saveClose">סגירה</button>
     </div>
   </div>
@@ -334,17 +337,26 @@
 
 <dialog id="setDlg">
   <div class="dlg">
-    <h2>הגדרות</h2>
-    <p>אפשר להדביק כאן טוקן אישי של גיטהאב מסוג fine-grained, מוגבל למאגר הזה בלבד ועם הרשאת contents:write. כשיש טוקן, כפתור השמירה כותב ישירות למאגר בלי לפתוח לשוניות. הטוקן נשמר רק בדפדפן הזה, לא נכתב לשום קובץ ולא נשלח לשום מקום מלבד גיטהאב.</p>
+    <h2>חיבור לשמירה אוטומטית</h2>
+    <p class="warn" id="tokWhy"></p>
+    <p>הדף הזה הוא קובץ סטטי בלי שרת, ולכן כדי שהשמירה תיכתב למאגר לבד הוא צריך טוקן אישי של גיטהאב. הגדרה חד פעמית, ואחריה כפתור השמירה עובד ברקע בלי שום לשונית.</p>
+    <ol class="steps-list">
+      <li>לחצו על <b>יצירת טוקן בגיטהאב</b>. נפתחת פעם אחת לשונית של גיטהאב.</li>
+      <li>ב-Repository access בחרו <b>Only select repositories</b>, ובתוכו את <b>chord-sheet</b>.</li>
+      <li>ב-Repository permissions הגדירו את <b>Contents</b> ל-<b>Read and write</b>.</li>
+      <li>Generate token, העתיקו את המחרוזת שמתחילה ב-github_pat_, והדביקו כאן.</li>
+    </ol>
     <p class="tok-state" id="tokState"></p>
     <input id="tokInput" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_...">
     <div class="row">
       <span>
         <button class="primary" id="tokSave">שמירת הטוקן</button>
+        <button id="tokCreate">יצירת טוקן בגיטהאב</button>
         <button id="tokRemove">הסרת הטוקן</button>
       </span>
       <button id="setClose">סגירה</button>
     </div>
+    <p class="fineprint">הטוקן נשמר רק בדפדפן הזה, לא נכתב לשום קובץ במאגר, לא מופיע בשום כתובת, ונשלח רק ל-api.github.com. אפשר להסיר אותו כאן בכל רגע.</p>
   </div>
 </dialog>
 
@@ -596,6 +608,9 @@ const ls={
 let manifest=[];
 let current={id:'scratch',slug:'',title:'',artist:'',inRepo:false};
 let baseContent='';
+/* שירים שנשמרו בהפעלה הזאת. גיטהאב פייג'ס מתעדכן בפיגור של דקה,
+   ובינתיים הם נשארים ברשימה מהזיכרון */
+const recentSaves={};
 
 function uid(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function bust(u){return u+(u.includes('?')?'&':'?')+'v='+Date.now();}
@@ -625,10 +640,6 @@ function localIndex(){
   try{const a=JSON.parse(ls.get(LOCAL_INDEX)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}
 }
 function saveLocalIndex(a){ls.set(LOCAL_INDEX,JSON.stringify(a));}
-function forgetLocal(id){
-  saveLocalIndex(localIndex().filter(e=>e.id!==id));
-  ls.del(LOCAL+id);
-}
 
 /* ---- טעינת הרשימה ---- */
 async function loadManifest(){
@@ -647,6 +658,10 @@ async function loadManifest(){
   const locals=localIndex().filter(e=>!repoIds.has(e.id));
   saveLocalIndex(locals);
   manifest=repo.concat(locals.map(e=>Object.assign({},e,{local:true})));
+  for(const id of Object.keys(recentSaves)){
+    if(repoIds.has(id)) delete recentSaves[id];
+    else if(!manifest.some(e=>e.id===id)) manifest.push(Object.assign({},recentSaves[id]));
+  }
   if(!ok) libMsg('רשימת השירים לא נטענה. אפשר להמשיך לכתוב, ולשמור בהמשך.');
   else if(!manifest.length) libMsg('הספרייה ריקה. שמרו שיר ראשון והוא יופיע כאן.');
   else libMsg('');
@@ -907,43 +922,57 @@ async function ghPut(token,path,content,message){
 }
 async function directSave(){
   const token=ls.get(TOKEN_KEY);
-  if(!token){openSaveDialog();return;}
+  if(!token){askForToken('כדי לשמור בלחיצה אחת צריך לחבר טוקן פעם אחת.');return;}
+  if(saving) return;
   const entry=pendingEntry(), content=src.value;
-  const btn=$('save'); btn.disabled=true;
+  const btn=$('save'), label=btn.textContent;
+  saving=true; btn.disabled=true; btn.textContent='שומר';
   try{
-    toast('שומר את השיר');
     await ghPut(token,'songs/'+entry.slug+'.txt',content,'שיר: '+(entry.title||entry.slug));
     manifest=manifest.filter(e=>e.id!==entry.id).concat([cleanEntry(entry)]);
-    forgetLocal(entry.id);
-    toast('מעדכן את הרשימה');
+    recentSaves[entry.id]=cleanEntry(entry);
+    saveLocalIndex(localIndex().filter(e=>e.id!==entry.id));
+    ls.set(LOCAL+entry.id,content);
     await ghPut(token,MANIFEST_PATH,manifestJson(entry),'רשימה: '+(entry.title||entry.slug));
     current={id:entry.id,slug:entry.slug,title:entry.title,artist:entry.artist,inRepo:true};
     baseContent=content;
     ls.del(DRAFT+entry.id);
+    lastRefresh=Date.now();
     renderLib(); updateDraftBar();
-    toast('נשמר במאגר');
+    toast('נשמר. השיר בדרך לאתר, זה לוקח דקה');
   }catch(err){
-    toast('השמירה הישירה נכשלה. ' + (err&&err.message?err.message:'') + '. נפתחת שמירה דרך העורך');
-    openSaveDialog();
-  }finally{ btn.disabled=false; }
+    const msg=(err&&err.message)?err.message:'';
+    if(/נדחה/.test(msg)){
+      askForToken('הטוקן לא התקבל. ייתכן שפג תוקפו, שאין לו הרשאת Contents לכתיבה, או שהוא לא משויך למאגר chord-sheet.');
+    }else{
+      toast('השמירה נכשלה. '+msg);
+      openSaveDialog();
+    }
+  }finally{ saving=false; btn.disabled=false; btn.textContent=label; }
 }
-$('save').addEventListener('click',()=>{
-  if(ls.get(TOKEN_KEY)) directSave(); else openSaveDialog();
-});
+$('save').addEventListener('click',directSave);
 
 /* ---- הגדרות הטוקן ---- */
+let saving=false, saveAfterToken=false;
+const TOKEN_NEW_URL='https://github.com/settings/personal-access-tokens/new';
 function updateTokenState(){
   const on=!!ls.get(TOKEN_KEY);
   const el=$('tokState');
-  el.textContent=on?'טוקן פעיל. השמירה נכתבת ישירות למאגר.':'אין טוקן. השמירה נעשית דרך עורך הקבצים של גיטהאב.';
+  el.textContent=on?'מחובר. כפתור השמירה כותב ישירות למאגר.':'לא מחובר. השמירה עדיין לא אוטומטית.';
   el.classList.toggle('on',on);
-  $('settingsBtn').textContent=on?'הגדרות (טוקן פעיל)':'הגדרות';
+  $('settingsBtn').textContent=on?'הגדרות (מחובר)':'הגדרות';
+  $('tokRemove').hidden=!on;
 }
-$('settingsBtn').addEventListener('click',()=>{
+function askForToken(why){
+  saveAfterToken=!!why;
+  $('tokWhy').textContent=why||'';
   $('tokInput').value='';
   updateTokenState();
   $('setDlg').showModal();
-});
+  $('tokInput').focus();
+}
+$('settingsBtn').addEventListener('click',()=>askForToken(''));
+$('tokCreate').addEventListener('click',()=>window.open(TOKEN_NEW_URL,'_blank','noopener'));
 $('setClose').addEventListener('click',()=>$('setDlg').close());
 $('tokSave').addEventListener('click',()=>{
   const v=$('tokInput').value.trim();
@@ -951,14 +980,17 @@ $('tokSave').addEventListener('click',()=>{
   ls.set(TOKEN_KEY,v);
   $('tokInput').value='';
   updateTokenState();
-  toast('הטוקן נשמר בדפדפן הזה');
+  $('setDlg').close();
+  if(saveAfterToken){ saveAfterToken=false; directSave(); }
+  else toast('מחובר. מעכשיו השמירה אוטומטית');
 });
 $('tokRemove').addEventListener('click',()=>{
   ls.del(TOKEN_KEY);
   $('tokInput').value='';
   updateTokenState();
-  toast('הטוקן הוסר');
+  toast('הטוקן הוסר. השמירה חזרה להיות ידנית');
 });
+$('setDlg').addEventListener('close',()=>{saveAfterToken=false;$('tokWhy').textContent='';});
 
 /* ---- ייצוא וייבוא של כל הספרייה ---- */
 async function exportLib(){
